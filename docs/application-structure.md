@@ -13,7 +13,7 @@ The root `README.md` describes a larger event-driven platform with `payment-proc
 ```text
 +------------------+         HTTP POST /payments         +----------------------+
 | External Client  | ---------------------------------> | PaymentController    |
-+------------------+                                    | infrastructure/web   |
++------------------+                                    | infrastructure/adapter/in/web |
                                                           +----------+-----------+
                                                                      |
                                                                      v
@@ -39,7 +39,7 @@ The root `README.md` describes a larger event-driven platform with `payment-proc
                                                       v                           v
                                  +--------------------------------+   +-----------------------------+
                                  | PostgresPaymentRepository      |   | RabbitMqPaymentEventPublisher|
-                                 | infrastructure/persistence     |   | infrastructure/messaging     |
+                                 | infrastructure/adapter/out/persistence |   | infrastructure/adapter/out/messaging |
                                  +---------------+----------------+   +-------------+---------------+
                                                  |                                  |
                                                  v                                  v
@@ -79,21 +79,25 @@ payment-api/src/main/java/io/github/paymentapi
 |           +-- PaymentRepository
 |           +-- PaymentEventPublisher
 +-- infrastructure
-    +-- web
-    |   +-- PaymentController
-    |   +-- CreatePaymentRequest
-    |   +-- CreatePaymentResponse
-    |   +-- ApiExceptionHandler
-    +-- persistence
-    |   +-- PostgresPaymentRepository
-    |   +-- SpringDataPaymentRepository
-    |   +-- PaymentJpaEntity
-    |   +-- PaymentEntityMapper
-    +-- messaging
-        +-- RabbitMqConfiguration
-        +-- RabbitMqPaymentEventPublisher
-        +-- PaymentCreatedEvent
-        +-- PaymentMessagingProperties
+    +-- config
+    |   +-- Spring and adapter wiring
+    +-- adapter
+        +-- in
+        |   +-- web
+        |       +-- PaymentController
+        |       +-- CreatePaymentRequest
+        |       +-- CreatePaymentResponse
+        |       +-- ApiExceptionHandler
+        +-- out
+            +-- persistence
+            |   +-- PostgresPaymentRepository
+            |   +-- SpringDataPaymentRepository
+            |   +-- PaymentJpaEntity
+            |   +-- PaymentEntityMapper
+            +-- messaging
+                +-- RabbitMqPaymentEventPublisher
+                +-- PaymentCreatedEvent
+                +-- PaymentMessagingProperties
 ```
 
 ## Request Flow
@@ -114,13 +118,13 @@ payment-api/src/main/java/io/github/paymentapi
 ```mermaid
 flowchart LR
     client[External Client]
-    controller[PaymentController\ninfrastructure/web]
+    controller[PaymentController\ninfrastructure/adapter/in/web]
     usecase[CreatePaymentUseCase\napplication/port/in]
     service[CreatePaymentService\napplication/service]
     repoPort[PaymentRepository\ndomain/port/out]
     eventPort[PaymentEventPublisher\ndomain/port/out]
-    repoImpl[PostgresPaymentRepository\ninfrastructure/persistence]
-    eventImpl[RabbitMqPaymentEventPublisher\ninfrastructure/messaging]
+    repoImpl[PostgresPaymentRepository\ninfrastructure/adapter/out/persistence]
+    eventImpl[RabbitMqPaymentEventPublisher\ninfrastructure/adapter/out/messaging]
     db[(PostgreSQL)]
     broker[(RabbitMQ)]
     payment[Payment\ndomain/payment/model]

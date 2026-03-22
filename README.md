@@ -123,6 +123,14 @@ event-driven-payment-system/
 docker compose up --build
 ```
 
+The `payment-api` service also exposes a JVM debug port on `5005`, so you can attach a remote debugger while it runs in Docker.
+
+To run the API locally with the same debug port:
+
+```bash
+make api-run-debug
+```
+
 ---
 
 ## 📡 API Example

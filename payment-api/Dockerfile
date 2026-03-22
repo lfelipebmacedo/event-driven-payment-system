@@ -10,6 +10,6 @@ WORKDIR /app
 
 COPY --from=build /workspace/target/payment-api-0.0.1-SNAPSHOT.jar app.jar
 
-EXPOSE 8080
+EXPOSE 8080 5005
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_DEBUG_OPTS -jar /app/app.jar"]
