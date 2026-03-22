@@ -38,23 +38,24 @@ public class CreatePaymentService implements CreatePayment {
 
     private CreatePaymentResult reuseExistingPayment(Payment existingPayment, Payment requestedPayment) {
         existingPayment.ensureSameBusinessRequestAs(requestedPayment);
-        return toResult(existingPayment);
+        return toResult(existingPayment, false);
     }
 
     private CreatePaymentResult createAndPublish(Payment requestedPayment) {
         Payment persistedPayment = repository.save(requestedPayment);
         eventPublisher.publishPaymentCreated(persistedPayment);
-        return toResult(persistedPayment);
+        return toResult(persistedPayment, true);
     }
 
-    private CreatePaymentResult toResult(Payment payment) {
+    private CreatePaymentResult toResult(Payment payment, boolean created) {
         return CreatePaymentResult.with(
                 payment.paymentId(),
                 payment.externalReference(),
                 payment.amount(),
                 payment.currency(),
                 payment.payerId(),
-                payment.receiverId()
+                payment.receiverId(),
+                created
         );
     }
 }

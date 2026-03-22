@@ -63,6 +63,7 @@ class CreatePaymentServiceTest {
         assertEquals(command.externalReference(), result.externalReference());
         assertEquals(command.amount(), result.amount());
         assertEquals("BRL", result.currency());
+        assertEquals(true, result.created());
         verify(repository).findIdempotencyKey(command.idempotencyKey());
         verify(repository).save(any(Payment.class));
         verify(eventPublisher).publishPaymentCreated(persistedPayment);
@@ -97,6 +98,7 @@ class CreatePaymentServiceTest {
         CreatePaymentResult result = service.execute(retryCommand);
 
         assertEquals(existingPayment.externalReference(), result.externalReference());
+        assertEquals(false, result.created());
         verify(repository).findIdempotencyKey(idempotencyKey);
         verify(repository, never()).save(any(Payment.class));
         verify(eventPublisher, never()).publishPaymentCreated(any(Payment.class));

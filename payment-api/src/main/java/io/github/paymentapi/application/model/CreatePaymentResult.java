@@ -9,9 +9,10 @@ public record CreatePaymentResult(
         BigDecimal amount,
         String currency,
         UUID payerId,
-        UUID receiverId
+        UUID receiverId,
+        boolean created
 ) {
-    public static CreatePaymentResult with(UUID paymentId, UUID externalReference, BigDecimal amount, String currency, UUID payerId, UUID receiverId) {
-        return new CreatePaymentResult(paymentId, externalReference, amount, currency, payerId, receiverId);
+    public static CreatePaymentResult with(UUID paymentId, UUID externalReference, BigDecimal amount, String currency, UUID payerId, UUID receiverId, boolean created) {
+        return new CreatePaymentResult(paymentId, externalReference, amount, currency, payerId, receiverId, created);
     }
 }

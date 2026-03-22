@@ -22,7 +22,8 @@ public class PostgresPaymentRepository implements PaymentRepository {
 
     @Override
     public Optional<Payment> findIdempotencyKey(UUID idempotencyKey) {
-        return Optional.empty();
+        return repository.findByIdempotencyKey(idempotencyKey)
+                .map(this::toDomain);
     }
 
     @Override
@@ -37,7 +38,12 @@ public class PostgresPaymentRepository implements PaymentRepository {
 
         PaymentJpaEntity entity = repository.save(paymentEntity);
 
-        return Payment.with(entity.getPaymentId(),
+        return toDomain(entity);
+    }
+
+    private Payment toDomain(PaymentJpaEntity entity) {
+        return Payment.with(
+                entity.getPaymentId(),
                 entity.getExternalReference(),
                 entity.getAmount(),
                 entity.getCurrency(),

@@ -4,8 +4,9 @@ import io.github.paymentapi.application.model.CreatePaymentCommand;
 import io.github.paymentapi.application.model.CreatePaymentResult;
 import io.github.paymentapi.application.port.in.CreatePayment;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -32,14 +33,27 @@ public class PaymentController {
             @RequestHeader("Idempotency-Key") String idempotencyKey,
             @RequestBody CreatePaymentRequest request) throws URISyntaxException {
         CreatePaymentResult createPaymentResult = createPayment.execute(CreatePaymentCommand.with(request.externalReference(), request.amount(), request.currency(),
-                request.payerId(), request.receiverId(), UUID.fromString(idempotencyKey)));
+                request.payerId(), request.receiverId(), parseIdempotencyKey(idempotencyKey)));
 
-        return ResponseEntity.created(new URI(createPaymentResult.paymentId().toString())).body(CreatePaymentResponse.with(
+        CreatePaymentResponse response = CreatePaymentResponse.with(
                 createPaymentResult.externalReference(),
                 createPaymentResult.amount(),
                 createPaymentResult.currency(),
                 createPaymentResult.payerId(),
-                createPaymentResult.receiverId())
-        );
+                createPaymentResult.receiverId());
+
+        if (createPaymentResult.created()) {
+            return ResponseEntity.created(new URI(createPaymentResult.paymentId().toString())).body(response);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    private UUID parseIdempotencyKey(String idempotencyKey) {
+        try {
+            return UUID.fromString(idempotencyKey);
+        } catch (IllegalArgumentException exception) {
+            throw new ErrorResponseException(HttpStatus.BAD_REQUEST);
+        }
     }
 }
